@@ -150,7 +150,8 @@
           :~  [%inline-code ';portal']
               ' is a '
               [%inline-code '%grout']
-              'command which creates a portal to the nearest groups to '
+              'command which opens up a portal to the (non-secret) groups '
+              'which you are a member of and which are nearest to '
               'the one you are currently in. Nearness is measured by '
               'membership overlap (Jaccard index).'
               [%break ~]
