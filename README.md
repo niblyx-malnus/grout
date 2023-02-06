@@ -5,12 +5,12 @@ Inspired by [%gato](https://github.com/midsum-salrux/gato/) by ~midsum-salrux.
 (Probably could have just made it a thread in the gato desk, honestly...)
 
 ## Installation
-`|intall ~dister-dozzod-niblyx-malnus %grout`
+`|install ~dister-dozzod-niblyx-malnus %grout`
 
 ## Commands
 
 | command | description |
 | ------- | ----------- |
 | `;xpals` | extract group members as pals tagged with group name |
-| `;portal` or `;portal 3` `(<- a @ud)` | post links to the nearest groups ranked by jaccard index of group membership |
+| `;portal` or `;portal 3` (`;portal @ud<=10`) | post links to the nearest groups ranked by jaccard index of group membership |
 | ... | ... |
