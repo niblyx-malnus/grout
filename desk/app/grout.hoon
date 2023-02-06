@@ -7,8 +7,7 @@
 +$  state-0  [%0 data]
 +$  card  card:agent:gall
 ++  promo
-  ^-  reply
-  :+  %story  ~
+  ^-  (list inline:c)
   :~  'Install '
       [%inline-code '%grout']
       ' with '
@@ -147,13 +146,18 @@
           |=([=flag:g @rs] [%cite %group flag])
         ::
         :: create reply
-        =/  =reply  [%story cites ~]
+        =/  plain=(list inline:c)
+          :~  [%inline-code ';portal']
+              ' is a '
+              [%inline-code '%grout']
+              'command which creates a portal to the nearest groups to '
+              'the one you are currently in. Nearness is measured by '
+              'membership overlap (Jaccard index).'
+              [%break ~]
+          ==
+        =/  =reply  [%story cites (weld plain promo)]
         =/  id  ?~(rid.axn (some id.axn) rid.axn)
-        :_  state
-        :~  (message-card:hc flag.axn id reply)
-            =.  now.bowl  +(now.bowl)
-            (message-card:hc flag.axn id promo)
-        ==
+        :_(state [(message-card:hc flag.axn id reply)]~)
         ::
           %extract-pals
         ~&  "Extracting pals..."
@@ -194,7 +198,7 @@
         :_  state
         :~  (message-card:hc flag.axn id reply)
             =.  now.bowl  +(now.bowl)
-            (message-card:hc flag.axn id promo)
+            (message-card:hc flag.axn id [%story ~ promo])
         ==
       ==
     ==
@@ -242,7 +246,7 @@
         ==
       ==
     ==
-  ==
+  == 
 ++  on-arvo   on-arvo:def
 ++  on-fail   on-fail:def
 --
