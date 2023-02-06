@@ -12,5 +12,5 @@ Inspired by [%gato](https://github.com/midsum-salrux/gato/) by ~midsum-salrux.
 | command | description |
 | ------- | ----------- |
 | `;xpals` | extract group members as pals tagged with group name |
-| `;portal` or `;portal 3` `(<- a @ud)` | post links to the nearest group by jaccard index of group membership |
+| `;portal` or `;portal 3` `(<- a @ud)` | post links to the nearest groups ranked by jaccard index of group membership |
 | ... | ... |
