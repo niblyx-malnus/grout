@@ -116,6 +116,7 @@
         ==  ==
         ::
           %confirm-pals
+        ?>  =(src.bowl our.bowl)
         =/  targets
           .^((set ship) %gx (welp (en-beak:hc %pals) /targets/noun))
         =/  mutuals
@@ -128,9 +129,21 @@
             (crip "%grout: extracted pals from group %{(trip group.axn)}")
           (crip "%grout: failed to extract pals from group %{(trip group.axn)}")
         =/  =reply  [%story ~ [%code msg]~]
+        =/  promo=^reply
+          :+  %story  ~
+          :~  'Install '
+              [%inline-code '%grout']
+              ' with '
+              [%inline-code '|install ~dister-dozzod-niblyx-malnus %grout']
+              ' and find the code '
+              [%link p='https://github.com/niblyx-malnus/grout' q='here']  '.'
+          ==
         =/  id  ?~(rid.axn (some id.axn) rid.axn)
         :_  state
-        [(message-card:hc flag.axn id reply)]~
+        :~  (message-card:hc flag.axn id reply)
+            =.  now.bowl  +(now.bowl)
+            (message-card:hc flag.axn id promo)
+        ==
       ==
     ==
   --
