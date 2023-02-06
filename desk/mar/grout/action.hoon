@@ -1,4 +1,4 @@
-/-  *gito
+/-  *grout
 ::
 |_  axn=action
 ++  grad  %noun
