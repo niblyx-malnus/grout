@@ -16,5 +16,6 @@
 +$  command
   $%  [%extract-pals ~]
       [%confirm-pals group=term fleet=(set ship)]
+      [%portal n=@]
   ==
 --

@@ -6,6 +6,16 @@
   ==
 +$  state-0  [%0 data]
 +$  card  card:agent:gall
+++  promo
+  ^-  reply
+  :+  %story  ~
+  :~  'Install '
+      [%inline-code '%grout']
+      ' with '
+      [%inline-code '|install ~dister-dozzod-niblyx-malnus %grout']
+      ' and find the code '
+      [%link p='https://github.com/niblyx-malnus/grout' q='here']  '.'
+  ==
 --
 ::
 =|  state-0
@@ -38,6 +48,36 @@
     ?~  inlines  !!
     ?@  i.inlines  i.inlines
     $(inlines t.inlines)
+  ++  jaccard
+    |=  [a=(set) b=(set)]
+    ^-  @rs
+    %+  div:rs
+      (sun:rs ~(wyt in (~(int in a) b)))
+    (sun:rs ~(wyt in (~(uni in a) b)))
+  ::
+  :: get group flag of a chat
+  ++  group-flag
+    |=  =flag:c
+    ^-  flag:g
+    =-  group
+    .^  perm:c  %gx
+        ;:  welp
+          (en-beak %chat)
+          /chat/(scot %p p.flag)/[q.flag]
+          /perm/chat-perm
+        ==
+    ==
+  ++  group-to-fleet
+    |=  =flag:g
+    ^-  (set ship)
+    .^  (set ship)  %gx
+        ;:  welp
+          (en-beak %groups)
+          /groups/(scot %p p.flag)/[q.flag]
+          /fleet/ships
+          /ships
+        ==
+    ==
   --
 %-  agent:dbug
 %+  verb  |
@@ -78,27 +118,48 @@
     ?-    -.axn
         %command
       ?-    +>-.axn
+          %portal
+        ?>  =(author.axn our.bowl)
+        =/  galf  (group-flag:hc flag.axn)
+        =/  groups  .^(groups:g %gx (welp (en-beak:hc %groups) /groups/groups))
+        =/  fleet=(set ship)  ~(key by fleet:(~(got by groups) galf))
+        :: 
+        :: remove self and secret groups
+        =+  %+  murn  ~(tap by groups)
+            |=  [=flag:g group:g]
+            ?:(|(secret =(flag galf)) ~ (some +<))
+        ::
+        :: compute jaccard index with current group
+        =+  %+  turn  -
+            |=  [=flag:g group:g]
+            ^-  [flag:g @rs]
+            [flag (jaccard:hc ^fleet ~(key by fleet))]
+        ::
+        :: sort by jaccard index
+        =/  jack=(list [flag:g @rs])
+          %+  sort  -
+          |=  [a=[flag:g @rs] b=[flag:g @rs]]
+          (gth:rs +.a +.b)
+        ::
+        :: convert groups to cite blocks
+        =/  cites=(list block:c)
+          %+  turn  (scag (min n.axn 10) jack)
+          |=([=flag:g @rs] [%cite %group flag])
+        ::
+        :: create reply
+        =/  =reply  [%story cites ~]
+        =/  id  ?~(rid.axn (some id.axn) rid.axn)
+        :_  state
+        :~  (message-card:hc flag.axn id reply)
+            =.  now.bowl  +(now.bowl)
+            (message-card:hc flag.axn id promo)
+        ==
+        ::
           %extract-pals
         ~&  "Extracting pals..."
         ?>  =(author.axn our.bowl)
-        =/  galf=flag:g
-          =-  group
-          .^  perm:c  %gx
-              ;:  welp
-                (en-beak:hc %chat)
-                /chat/(scot %p p.flag.axn)/[q.flag.axn]
-                /perm/chat-perm
-              ==
-          ==
-        =/  fleet
-          .^  (set ship)  %gx
-              ;:  welp
-                (en-beak:hc %groups)
-                /groups/(scot %p p.galf)/[q.galf]
-                /fleet/ships
-                /ships
-              ==
-          ==
+        =/  galf  (group-flag:hc flag.axn)
+        =/  fleet  (group-to-fleet:hc galf)
         =/  pals-cards
           %+  turn  ~(tap in fleet)
           |=  =ship
@@ -129,15 +190,6 @@
             (crip "%grout: extracted pals from group %{(trip group.axn)}")
           (crip "%grout: failed to extract pals from group %{(trip group.axn)}")
         =/  =reply  [%story ~ [%code msg]~]
-        =/  promo=^reply
-          :+  %story  ~
-          :~  'Install '
-              [%inline-code '%grout']
-              ' with '
-              [%inline-code '|install ~dister-dozzod-niblyx-malnus %grout']
-              ' and find the code '
-              [%link p='https://github.com/niblyx-malnus/grout' q='here']  '.'
-          ==
         =/  id  ?~(rid.axn (some id.axn) rid.axn)
         :_  state
         :~  (message-card:hc flag.axn id reply)
@@ -167,6 +219,7 @@
         =/  =action:chat  !<(action:chat q.cage.sign)
         =/  =flag:chat  p.action
         =/  =diff:chat  q.q.action
+        ~&  diff
         ?+  -.diff  `this
             %writs
           =/  =id:chat           p.p.diff
