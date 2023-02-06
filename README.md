@@ -10,3 +10,4 @@ Inspired by [%gato](https://github.com/midsum-salrux/gato/) by ~midsum-salrux.
 | command | description |
 | ------- | ----------- |
 | `;xpals` | extract group members as pals tagged with group name |
+| ... | ... |
