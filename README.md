@@ -4,6 +4,8 @@ Inspired by [%gato](https://github.com/midsum-salrux/gato/) by ~midsum-salrux.
 
 (Probably could have just made it a thread in the gato desk, honestly...)
 
+BE CAREFUL! May be causing some ames trouble somehow...
+
 ## Installation
 `|install ~dister-dozzod-niblyx-malnus %grout`
 
