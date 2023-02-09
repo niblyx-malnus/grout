@@ -8,12 +8,15 @@
 +$  card  card:agent:gall
 ++  promo
   ^-  (list inline:c)
-  :~  'Install '
-      [%inline-code '%grout']
-      ' with '
-      [%inline-code '|install ~dister-dozzod-niblyx-malnus %grout']
-      ' and find the code '
-      [%link p='https://github.com/niblyx-malnus/grout' q='here']  '.'
+  :~  :: 'Install '
+      :: [%inline-code '%grout']
+      :: ' with '
+      :: [%inline-code '|install ~dister-dozzod-niblyx-malnus %grout']
+      :: ' and find the code '
+      'Find the code for '
+      [%inline-code '%grout']  ' '
+      [%link :_('here' 'https://github.com/niblyx-malnus/grout')]
+      '.'
   ==
 --
 ::
@@ -26,23 +29,31 @@
     [%pass /chat/updates %agent [our.bowl %chat] %watch /ui]
   ++  reply-to-content
     |=  =reply
-    ^-  content:chat
+    ^-  content:c
     ?^  reply  reply
     [%story [~ ~[reply]]]
   ++  message-card
-    |=  [=flag:chat id=(unit id:chat) =reply]
+    |=  [=flag:c rid=id:c =reply]
     ^-  card
-    :*  %pass  /chat/poke  %agent  [our.bowl %chat]  %poke
+    :*  %pass  /chat/poke/message  %agent  [our.bowl %chat]  %poke
         :-  %chat-action
-        !>  ^-  action:chat
+        !>  ^-  action:c
         :*  flag  now.bowl
-            %writs  [our now]:bowl  %add  replying=id
+            %writs  [our now]:bowl  %add  replying=(some rid)
             author=our.bowl  sent=now.bowl
             (reply-to-content reply)
         ==
     ==
+  ++  delete-card
+    |=  [=flag:c =id:c]
+    ^-  card
+    :*  %pass  /chat/poke/delete  %agent  [our.bowl %chat]  %poke
+        :-  %chat-action
+        !>  ^-  action:c
+        [flag now.bowl %writs id %del ~]
+    ==
   ++  first-cord
-    |=  inlines=(list inline:chat)
+    |=  inlines=(list inline:c)
     |-
     ?~  inlines  !!
     ?@  i.inlines  i.inlines
@@ -77,6 +88,38 @@
           /ships
         ==
     ==
+  ++  flare-cards
+    |=  [=flag:c =id:c rid=(unit id:c) t=@dr =content:c]
+    ^-  (list card)
+    |^
+    =/  wire  (en-wire:timers flag id)
+    =/  id  ?~(rid id u.rid)
+    =/  flare-content
+      ?>  ?=(%story -.content)
+      content(+> (welp flare-text +>.content))
+    %+  weld
+      [%pass wire %arvo %b %wait (add now.bowl t)]~
+    ?:  ?=(^ rid)
+      [(message-card flag id content)]~
+    [(message-card flag id flare-content)]~
+    ++  flare-text
+      ^-  (list inline:c)
+      :~  '\0a'
+          'Don\'t mind me! '
+          'This message will self-destruct '
+          (scot %dr t)  ' after it was posted.'
+          [%break ~]  '🫡🔥🔥🫡'  [%break ~]
+      ==
+    --
+  ++  timers
+    |%
+    ++  en-wire
+      |=  [=flag:c =id:c]
+      ^-  wire
+      %+  weld
+        /timers/(scot %p p.flag)/[q.flag]
+      /(scot %p p.id)/(scot %da q.id)
+    --
   --
 %-  agent:dbug
 %+  verb  |
@@ -84,7 +127,7 @@
 |_  =bowl:gall
 +*  this  .
     def   ~(. (default-agent this %.n) bowl)
-    hc    ~(. +> bowl)
+    hc   ~(. +> bowl)
 ::
 ++  on-init
   ^-  (quip card _this)
@@ -116,8 +159,95 @@
     ^-  (quip card _state)
     ?-    -.axn
         %command
-      ?-    +>-.axn
+      =/  cmd=command  +>.axn
+      ?-    +<.cmd
+          %flare
+        :_  state
+        %:  flare-cards:hc
+          flag.axn  id.axn  rid.axn  t.cmd  [%story ~ ~]
+        ==
+        ::
           %portal
+        ?>  =(author.axn our.bowl)
+        =/  window  ~d30  :: constant
+        =/  galf  (group-flag:hc flag.axn)
+        =/  chats=(map flag:c chat:c)
+          .^  (map flag:c chat:c)  %gx
+              (welp (en-beak:hc %chat) /chats/chats)
+          ==
+        ::
+        :: get new posts
+        =/  since  (sub now.bowl window)
+        =/  new
+          %-  ~(run by chats)
+          |=  =chat:c
+          ^-  [flag:g (list [time writ:c])]
+          :-  group.perm.chat
+          =+  on:writs:c
+          %-  flop  :: newest first
+          %+  murn  :: ignore notices
+            (tap (lot wit.pact.chat `since ~))
+          |=  [time writ:c]
+          ?.(?=(%story -.content) ~ (some +<))
+        ::
+        :: remove dead chats
+        =|  mems=(map flag:c [flag:g id:c (set ship)])
+        =.  mems
+          %-  ~(gas by mems)
+          %+  turn
+            %+  murn  ~(tap by new)
+            |=  [=flag:c flag:g l=(list [time writ:c])]
+            ?~(l ~ (some +<))
+          |=  [=flag:c grup=flag:g l=(list [time writ:c])]
+          ?~  l  !!
+          :^  flag  grup  id:i.l
+          (sy (turn l |=([time writ:c] author)))
+        ::
+        =/  us=(set ship)  +>:(~(got by mems) flag.axn)
+        =/  not-us=(list [flag:c flag:g id:c (set ship)])
+          %+  murn  ~(tap by mems)
+          |=  [=flag:c grup=flag:g =id:c mem=(set ship)]
+          ?:  =(flag flag.axn)  ~
+          ?:  =(grup galf)  ~
+          (some +<)
+        ::
+        :: get similarity
+        =+  %+  turn  not-us
+            |=  [=flag:c grup=flag:g =id:c mem=(set ship)]
+            [[flag id] (jaccard us mem)]
+        =/  jack=(list [[flag:c id:c] @rs])
+          %+  sort  -
+          |*  [a=[* @rs] b=[* @rs]]
+          (gth:rs +.a +.b)
+        ::
+        :: convert groups to cite blocks
+        =/  cites=(list block:c)
+          %+  turn  (scag (min n.cmd 10) jack)
+          |=  [[=flag:c =id:c] @rs]
+          :^  %cite  %chan  [%chat flag]
+          /msg/(scot %p p.id)/(scot %ud q.id)
+        ::
+        :: create reply
+        =/  plain=(list inline:c)
+          :~  [%inline-code ';portal']
+              ' is a '
+              [%inline-code '%grout']
+              'command which opens up a portal to the chat channels '
+              'which you are a member of and which are nearest to '
+              'the one you are currently in. Nearness is measured by '
+              'recent-poster overlap (Jaccard index).'
+              [%break ~]
+          ==
+        =/  =content:c  [%story cites (weld plain promo)]
+        =/  id  ?~(rid.axn id.axn u.rid.axn)
+        :_  state
+        ?.  zap.cmd
+          [(message-card:hc flag.axn id content)]~
+        %:  flare-cards:hc
+          flag.axn  id.axn  rid.axn  ~s10  content
+        ==
+        ::
+          %old-portal
         ?>  =(author.axn our.bowl)
         =/  galf  (group-flag:hc flag.axn)
         =/  groups  .^(groups:g %gx (welp (en-beak:hc %groups) /groups/groups))
@@ -142,7 +272,7 @@
         ::
         :: convert groups to cite blocks
         =/  cites=(list block:c)
-          %+  turn  (scag (min n.axn 10) jack)
+          %+  turn  (scag (min n.cmd 10) jack)
           |=([=flag:g @rs] [%cite %group flag])
         ::
         :: create reply
@@ -156,9 +286,14 @@
               'membership overlap (Jaccard index).'
               [%break ~]
           ==
-        =/  =reply  [%story cites (weld plain promo)]
-        =/  id  ?~(rid.axn (some id.axn) rid.axn)
-        :_(state [(message-card:hc flag.axn id reply)]~)
+        =/  =content:c  [%story cites (weld plain promo)]
+        =/  id  ?~(rid.axn id.axn u.rid.axn)
+        :_  state
+        ?.  zap.cmd
+          [(message-card:hc flag.axn id content)]~
+        %:  flare-cards:hc
+          flag.axn  id.axn  rid.axn  ~s10  content
+        ==
         ::
           %extract-pals
         ~&  "Extracting pals..."
@@ -178,7 +313,7 @@
           pals-cards
         :~  :*  %pass  /  %agent  [our.bowl %grout]  %poke
                 :-  %grout-action
-                !>  [%command +<.axn %confirm-pals q.galf fleet]
+                !>  [%command +<.axn zap.cmd %confirm-pals q.galf fleet]
         ==  ==
         ::
           %confirm-pals
@@ -188,18 +323,22 @@
         =/  mutuals
           .^((set ship) %gx (welp (en-beak:hc %pals) /mutuals/noun))
         =/  diff=(set ship)
-          %-  ~(dif in (~(del in fleet.axn) our.bowl))
+          %-  ~(dif in (~(del in fleet.cmd) our.bowl))
           (~(uni in targets) mutuals)
         =/  msg
           ?~  diff
-            (crip "%grout: extracted pals from group %{(trip group.axn)}")
-          (crip "%grout: failed to extract pals from group %{(trip group.axn)}")
-        =/  =reply  [%story ~ [%code msg]~]
-        =/  id  ?~(rid.axn (some id.axn) rid.axn)
+            (crip "%grout: extracted pals from group %{(trip group.cmd)}")
+          (crip "%grout: failed to extract pals from group %{(trip group.cmd)}")
+        =/  =content:c
+          :+  %story  ~
+          ['' [%code msg] '\0a' promo]
+        =/  rid=id:c
+          ?~(rid.axn id.axn u.rid.axn)
         :_  state
-        :~  (message-card:hc flag.axn id reply)
-            =.  now.bowl  +(now.bowl)
-            (message-card:hc flag.axn id [%story ~ promo])
+        ?.  zap.cmd
+          [(message-card:hc flag.axn rid content)]~
+        %:  flare-cards:hc
+          flag.axn  id.axn  rid.axn  ~s10  content
         ==
       ==
     ==
@@ -221,18 +360,17 @@
         %fact
       ?+    p.cage.sign  `this
           %chat-action-0
-        =/  =action:chat  !<(action:chat q.cage.sign)
-        =/  =flag:chat  p.action
-        =/  =diff:chat  q.q.action
-        ~&  diff
+        =/  =action:c  !<(action:c q.cage.sign)
+        =/  =flag:c  p.action
+        =/  =diff:c  q.q.action
         ?+  -.diff  `this
             %writs
-          =/  =id:chat           p.p.diff
-          =/  =delta:writs:chat  q.p.diff
+          =/  =id:c           p.p.diff
+          =/  =delta:writs:c  q.p.diff
           ?+  -.delta  `this
               %add
-            =/  =memo:chat  p.delta
-            =/  rid=(unit id:chat)  replying.memo
+            =/  =memo:c  p.delta
+            =/  rid=(unit id:c)  replying.memo
             ?>  ?=(%story -.content.memo)
             =/  line  (first-cord:hc q.p.content.memo)
             =/  axn=^action
@@ -248,6 +386,22 @@
       ==
     ==
   == 
-++  on-arvo   on-arvo:def
+::
+++  on-arvo
+  |=  [=wire =sign-arvo]
+  ^-  (quip card _this)
+  ?+    wire  (on-arvo:def wire sign-arvo)
+      [%timers @t @ta @t @t ~]
+    =/  =flag:c
+      [(slav %p i.t.wire) i.t.t.wire]
+    =/  =id:c
+      [(slav %p i.t.t.t.wire) (slav %da i.t.t.t.t.wire)]
+    ?+    sign-arvo  (on-arvo:def wire sign-arvo)
+        [%behn %wake *]
+      ?^  error.sign-arvo
+        (on-arvo:def wire sign-arvo)
+      :_(this [(delete-card:hc flag id)]~)
+    ==
+  ==
 ++  on-fail   on-fail:def
 --
