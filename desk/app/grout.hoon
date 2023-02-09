@@ -214,25 +214,32 @@
         :: get similarity
         =+  %+  turn  not-us
             |=  [=flag:c grup=flag:g =id:c mem=(set ship)]
-            [[flag id] (jaccard us mem)]
-        =/  jack=(list [[flag:c id:c] @rs])
-          %+  sort  -
-          |*  [a=[* @rs] b=[* @rs]]
-          (gth:rs +.a +.b)
+            [grup (jaccard us mem)]
+            :: [[flag id] (jaccard us mem)]
+        :: =/  jack=(list [[flag:c id:c] @rs])
+        =/  jack=(list flag:g)
+          %~  tap  in
+          %-  sy
+          %+  turn
+            %+  sort  -
+            |*  [a=[* @rs] b=[* @rs]]
+            (gth:rs +.a +.b)
+          head
         ::
         :: convert groups to cite blocks
         =/  cites=(list block:c)
           %+  turn  (scag (min n.cmd 10) jack)
-          |=  [[=flag:c =id:c] @rs]
-          :^  %cite  %chan  [%chat flag]
-          /msg/(scot %p p.id)/(scot %ud q.id)
+          |=(=flag:g [%cite %group flag])
+          :: |=  [[=flag:c =id:c] @rs]
+          :: :^  %cite  %chan  [%chat flag]
+          :: /msg/(scot %p p.id)/(scot %ud q.id)
         ::
         :: create reply
         =/  plain=(list inline:c)
           :~  [%inline-code ';portal']
               ' is a '
               [%inline-code '%grout']
-              'command which opens up a portal to the chat channels '
+              'command which opens up a portal to the groups '
               'which you are a member of and which are nearest to '
               'the one you are currently in. Nearness is measured by '
               'recent-poster overlap (Jaccard index).'
