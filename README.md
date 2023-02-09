@@ -21,6 +21,7 @@ Messy and experimental. Commands subject to change.
 
 | command | description |
 | ------- | ----------- |
+| `!` prefix instead of `;` | self-destruct in ~s10 |
 | `;xpals` | extract group members as pals tagged with group name |
 | `;portal` or `;portal 3` (`;portal @ud<=10`) | post links to the nearest groups ranked by jaccard index of group membership |
 | ... | ... |
