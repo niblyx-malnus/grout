@@ -12,6 +12,9 @@ Inspired by [%gato](https://github.com/midsum-salrux/gato/) by ~midsum-salrux.
 8. At the dojo command line `|commit %grout`.
 9. Install with `|install our %grout`.
 
+## WARNING:
+Messy and experimental. Commands subject to change.
+
 ## Commands
 
 | command | description |
