@@ -2,6 +2,9 @@
 A bot to access simple groups-related utilities directly in a groups chat.
 Inspired by [%gato](https://github.com/midsum-salrux/gato/) by ~midsum-salrux.
 
+## WARNING:
+Messy and experimental. Commands subject to change. I expect to make a big mess while generating initial commands and then hopefully extract some order out of the resulting chaos.
+
 ## Installation
 1. Clone this repo.
 2. Boot up a ship (fakezod or moon or whatever you use).
@@ -13,9 +16,6 @@ Inspired by [%gato](https://github.com/midsum-salrux/gato/) by ~midsum-salrux.
 9. Install with `|install our %grout`.
 
 Or `|install ~dister-dozzod-niblyx-malnus %grout` for regular updates.
-
-## WARNING:
-Messy and experimental. Commands subject to change.
 
 ## Commands
 
