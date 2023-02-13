@@ -2,6 +2,9 @@
 A bot to access simple groups-related utilities directly in a groups chat.
 Inspired by [%gato](https://github.com/midsum-salrux/gato/) by ~midsum-salrux.
 
+## WARNING:
+Messy and experimental. Commands subject to change. I expect to make a big mess while generating initial commands and then to hopefully extract some order out of the resulting chaos.
+
 ## Installation
 1. Clone this repo.
 2. Boot up a ship (fakezod or moon or whatever you use).
@@ -14,13 +17,11 @@ Inspired by [%gato](https://github.com/midsum-salrux/gato/) by ~midsum-salrux.
 
 Or `|install ~dister-dozzod-niblyx-malnus %grout` for regular updates.
 
-## WARNING:
-Messy and experimental. Commands subject to change.
-
 ## Commands
 
 | command | description |
 | ------- | ----------- |
+| `!` prefix instead of `;` | self-destruct in `~s10` |
 | `;xpals` | extract group members as pals tagged with group name |
 | `;portal` or `;portal 3` (`;portal @ud<=10`) | post links to the nearest groups ranked by jaccard index of group membership |
 | ... | ... |
