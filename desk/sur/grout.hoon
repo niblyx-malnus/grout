@@ -1,7 +1,12 @@
 /-  c=chat, g=groups
 |%
++$  state-0
+  $:  %0
+      home=flag:g
+      grags=(jug flag:g @ta)
+  ==
+::
 +$  reply  $@(cord content:c)
-+$  data  grags=(jug flag:g @ta)
 ::
 :: context from command message
 +$  papers
@@ -20,9 +25,15 @@
   $%  [%extract-pals ~]
       [%confirm-pals group=term fleet=(set ship)]
       [%old-portal n=@]
-      [%portal n=@]
+      [%portal n=@] :: recent poster overlap (pove?)
+      [%lurn n=@]  :: groups with latest unreads
+      [%moun n=@]  :: groups with most unreads
+                   :: most mentioned in group (mome)
       [%flare t=@dr]
-      :: [%tag-group tags=(set @ta)]
+      [%print-commands ~]
+      [%set-home ~]
+      [%go-home ~]
+      [%tag-group tag=@ta]
       :: [%list-grags ~]
   ==  ==
 --

@@ -1,10 +1,10 @@
 /-  *grout, c=chat, g=groups
-/+  *command-parser, verb, dbug, default-agent
+/+  verb, dbug, default-agent
+/+  *command-parser, groups-core
 |%
 +$  versioned-state
   $%  state-0
   ==
-+$  state-0  [%0 data]
 +$  card  card:agent:gall
 ++  promo
   ^-  (list inline:c)
@@ -22,112 +22,129 @@
 ::
 =|  state-0
 =*  state  -
-=>
-  |_  =bowl:gall
-  ++  en-beak  |=(=desk /(scot %p our.bowl)/[desk]/(scot %da now.bowl))
-  ++  chat-subscribe-card
-    [%pass /chat/updates %agent [our.bowl %chat] %watch /ui]
-  ++  reply-to-content
-    |=  =reply
-    ^-  content:c
-    ?^  reply  reply
-    [%story [~ ~[reply]]]
-  ++  message-card
-    |=  [=flag:c rid=id:c =reply]
-    ^-  card
-    :*  %pass  /chat/poke/message  %agent  [our.bowl %chat]  %poke
-        :-  %chat-action
-        !>  ^-  action:c
-        :*  flag  now.bowl
-            %writs  [our now]:bowl  %add  replying=(some rid)
-            author=our.bowl  sent=now.bowl
-            (reply-to-content reply)
-        ==
-    ==
-  ++  delete-card
-    |=  [=flag:c =id:c]
-    ^-  card
-    :*  %pass  /chat/poke/delete  %agent  [our.bowl %chat]  %poke
-        :-  %chat-action
-        !>  ^-  action:c
-        [flag now.bowl %writs id %del ~]
-    ==
-  ++  first-cord
-    |=  inlines=(list inline:c)
-    |-
-    ?~  inlines  !!
-    ?@  i.inlines  i.inlines
-    $(inlines t.inlines)
-  ++  jaccard
-    |=  [a=(set) b=(set)]
-    ^-  @rs
-    %+  div:rs
-      (sun:rs ~(wyt in (~(int in a) b)))
-    (sun:rs ~(wyt in (~(uni in a) b)))
-  ::
-  :: get group flag of a chat
-  ++  group-flag
-    |=  =flag:c
-    ^-  flag:g
-    =-  group
-    .^  perm:c  %gx
-        ;:  welp
-          (en-beak %chat)
-          /chat/(scot %p p.flag)/[q.flag]
-          /perm/chat-perm
-        ==
-    ==
-  ++  group-to-fleet
-    |=  =flag:g
-    ^-  (set ship)
-    .^  (set ship)  %gx
-        ;:  welp
-          (en-beak %groups)
-          /groups/(scot %p p.flag)/[q.flag]
-          /fleet/ships
-          /ships
-        ==
-    ==
-  ++  flare-cards
-    |=  [=flag:c =id:c rid=(unit id:c) t=@dr =content:c]
-    ^-  (list card)
-    |^
-    =/  wire  (en-wire:timers flag id)
-    =/  id  ?~(rid id u.rid)
-    =/  flare-content
-      ?>  ?=(%story -.content)
-      content(+> (welp flare-text +>.content))
-    %+  weld
-      [%pass wire %arvo %b %wait (add now.bowl t)]~
-    ?:  ?=(^ rid)
-      [(message-card flag id content)]~
-    [(message-card flag id flare-content)]~
-    ++  flare-text
-      ^-  (list inline:c)
-      :~  '\0a'
-          'Don\'t mind me! '
-          'This message will self-destruct '
-          (scot %dr t)  ' after it was posted.'
-          [%break ~]  '🫡🔥🔥🫡'  [%break ~]
+:: generic helper core
+::
+|_  =bowl:gall
+++  en-beak  |=(=desk /(scot %p our.bowl)/[desk]/(scot %da now.bowl))
+++  chat-subscribe-card
+  [%pass /chat/updates %agent [our.bowl %chat] %watch /ui]
+::
+++  delete-card
+  |=  [=flag:c =id:c]
+  ^-  card
+  :*  %pass  /chat/poke/delete  %agent  [our.bowl %chat]  %poke
+      :-  %chat-action
+      !>  ^-  action:c
+      [flag now.bowl %writs id %del ~]
+  ==
+++  first-cord
+  |=  inlines=(list inline:c)
+  |-
+  ?~  inlines  !!
+  ?@  i.inlines  i.inlines
+  $(inlines t.inlines)
+::
+++  reply-to-content
+  |=  =reply
+  ^-  content:c
+  ?^  reply  reply
+  [%story [~ ~[reply]]]
+::
+++  message-card
+  |=  [=flag:c rid=(unit id:c) =reply]
+  ^-  card
+  =/  =id:c  [our now]:bowl
+  :*  %pass  /  %agent  [our.bowl %chat]  %poke
+      :-  %chat-action
+      !>  ^-  action:c
+      :*  flag  now.bowl
+          %writs  id  %add  replying=rid
+          author=our.bowl  sent=now.bowl
+          (reply-to-content reply)
       ==
-    --
-  ++  timers
-    |%
-    ++  en-wire
-      |=  [=flag:c =id:c]
-      ^-  wire
-      %+  weld
-        /timers/(scot %p p.flag)/[q.flag]
-      /(scot %p p.id)/(scot %da q.id)
-    --
+  ==
+::
+++  message-cards
+  |=  [=flag:c rid=(unit id:c) replies=(list reply)]
+  ^-  (list card)
+  =|  messages=(list card)
+  |-  ?~  replies  messages
+  %=  $
+    now.bowl  (add now.bowl (div ~s1 1.000))
+    replies   t.replies
+    messages  [(message-card flag rid i.replies) messages]
+  ==
+++  send-replies
+  |=  $:  =flag:c
+          src=id:c
+          rep=(unit id:c)
+          replies=(list reply)
+      ==
+  ^-  (list card)
+  =/  rid=id:c  ?~(rep src u.rep)
+  (message-cards flag (some rid) replies)
+::
+++  flare-cards
+  |=  [=flag:c =id:c rid=(unit id:c) t=@dr =content:c]
+  ^-  (list card)
+  |^
+  =/  wire  (en-wire:timers flag id)
+  =/  id  ?~(rid id u.rid)
+  =/  flare-content
+    ?>  ?=(%story -.content)
+    content(+> (welp flare-text +>.content))
+  %+  weld
+    [%pass wire %arvo %b %wait (add now.bowl t)]~
+  ?:  ?=(^ rid)
+    [(message-card flag (some id) content)]~
+  [(message-card flag (some id) flare-content)]~
+  ++  flare-text
+    ^-  (list inline:c)
+    :~  '\0a'
+        'Don\'t mind me! '
+        'This message will self-destruct '
+        (scot %dr t)  ' after it was posted.'
+        [%break ~]  '🫡🔥🔥🫡'  [%break ~]
+    ==
   --
+::
+++  enflare
+  |=  $:  [zap=? t=@dr]
+          =flag:c
+          src=id:c
+          rep=(unit id:c)
+          =content:c
+      ==
+  ^-  (list card)
+  ?.  zap
+    (send-replies flag src rep [content]~)
+  (flare-cards flag src rep t content)
+::
+++  encite-groups
+  |=  groups=(list flag:g)
+  ^-  (list block:c)
+  %+  turn  groups
+  |=(=flag:g [%cite %group flag])
+::
+++  timers
+  |%
+  ++  en-wire
+    |=  [=flag:c =id:c]
+    ^-  wire
+    %+  weld
+      /timers/(scot %p p.flag)/[q.flag]
+    /(scot %p p.id)/(scot %da q.id)
+  --
+--
+::
 %-  agent:dbug
 %+  verb  |
 ^-  agent:gall
 |_  =bowl:gall
 +*  this  .
     def   ~(. (default-agent this %.n) bowl)
-    hc   ~(. +> bowl)
+    gc    ~(. groups-core bowl)
+    hc    ~(. +> bowl)
 ::
 ++  on-init
   ^-  (quip card _this)
@@ -159,82 +176,154 @@
     ^-  (quip card _state)
     ?-    -.axn
         %command
+      ?>  =(author.axn our.bowl)
       =/  cmd=command  +>.axn
       ?-    +<.cmd
-          %flare
+          %tag-group
+        ?>  =(author.axn our.bowl)  :: can be changed
+        =/  galf  (group-flag:gc flag.axn)
+        =/  =content:c
+          :+  %story  ~
+          :~  [%inline-code ';tg']
+              ' is a '
+              [%inline-code '%grout']
+              'command which tags a group for use in '
+              'later filtering.'
+              [%break ~]
+          ==
+        :_  state(grags (~(put ju grags) galf tag.cmd))
+        %-  enflare:hc 
+        [[zap.cmd ~s10] flag.axn id.axn rid.axn content]
+        ::
+          %go-home
+        ?>  =(author.axn our.bowl)
+        =/  window  ~d30  :: constant
+        =/  galf  (group-flag:gc flag.axn)
+        ::
+        :: convert groups to cite blocks
+        =/  cites=(list block:c)  [%cite %group galf]~
+        ::
+        :: create reply
+        =/  plain=(list inline:c)
+          :~  [%inline-code ';go-home']
+              ' is a '
+              [%inline-code '%grout']
+              'command which opens up a portal to the groups '
+              'which you have set as your home base.'
+              [%break ~]
+          ==
+        =/  =content:c  [%story cites (weld plain promo)]
         :_  state
-        %:  flare-cards:hc
-          flag.axn  id.axn  rid.axn  t.cmd  [%story ~ ~]
-        ==
+        %-  enflare:hc 
+        [[zap.cmd ~s10] flag.axn id.axn rid.axn content]
+        ::
+          %set-home
+        ?>  =(author.axn our.bowl)
+        =/  galf  (group-flag:gc flag.axn)
+        =/  =content:c
+          :+  %story  ~
+          :~  [%inline-code ';set-home']
+              ' is a '
+              [%inline-code '%grout']
+              'command which sets a group as a home base '
+              'to be quickly portalled into.'
+              [%break ~]
+          ==
+        :_  state(home galf)
+        %-  enflare:hc 
+        [[zap.cmd ~s10] flag.axn id.axn rid.axn content]
+        ::
+          %print-commands
+        ?>  =(author.axn our.bowl)
+        ::
+        :: create reply
+        =/  =content:c
+          :+  %story  ~
+          :~  :-  %code
+              %-  crip  ;:  weld
+              "replace ';' with '!' for self-destruction "
+              "after 10 seconds.\a0"
+              ";portal: drop portal to other groups\a0"
+              ";xpals: extract pals from group\a0"
+              ==
+          ==
+        :_  state
+        %-  enflare:hc 
+        [[zap.cmd ~s10] flag.axn id.axn rid.axn content]
+        ::
+          %flare
+        ?>  =(author.axn our.bowl)
+        :_  state
+        =/  empty=content:c  [%story ~ ~]
+        %-  enflare:hc 
+        [[zap.cmd t.cmd] flag.axn id.axn rid.axn empty]
+        ::
+          %lurn
+        ?>  =(author.axn our.bowl)
+        =/  galf  (group-flag:gc flag.axn)
+        =/  lurn
+          %+  sort  ~(tap by (group-latest-unread:gc galf))
+          |=  [a=[flag:g @] b=[flag:g @]]
+          (gth +.a +.b)
+        :: convert groups to cite blocks
+        ::
+        =/  cites=(list block:c)
+          %-  encite-groups:hc
+          (turn (scag (min n.cmd 10) lurn) head)
+        :: create reply
+        ::
+        =/  plain=(list inline:c)
+          :~  [%inline-code ';lurn']
+              ' is a '
+              [%inline-code '%grout']
+              'command which opens up a portal to the groups '
+              'which contain the latest messages you have not read.'
+              [%break ~]
+          ==
+        =/  =content:c  [%story cites (weld plain promo)]
+        :_  state
+        %-  enflare:hc 
+        [[zap.cmd ~s10] flag.axn id.axn rid.axn content]
+        ::
+          %moun
+        ?>  =(author.axn our.bowl)
+        =/  galf  (group-flag:gc flag.axn)
+        =/  moun
+          %+  sort  ~(tap by (group-most-unread:gc galf))
+          |=  [a=[flag:g @] b=[flag:g @]]
+          (gth +.a +.b)
+        :: convert groups to cite blocks
+        ::
+        =/  cites=(list block:c)
+          %-  encite-groups:hc
+          (turn (scag (min n.cmd 10) moun) head)
+        :: create reply
+        ::
+        =/  plain=(list inline:c)
+          :~  [%inline-code ';moun']
+              ' is a '
+              [%inline-code '%grout']
+              'command which opens up a portal to the groups '
+              'which contain the most messages which you have not read.'
+              [%break ~]
+          ==
+        =/  =content:c  [%story cites (weld plain promo)]
+        :_  state
+        %-  enflare:hc 
+        [[zap.cmd ~s10] flag.axn id.axn rid.axn content]
         ::
           %portal
         ?>  =(author.axn our.bowl)
         =/  window  ~d30  :: constant
-        =/  galf  (group-flag:hc flag.axn)
-        =/  chats=(map flag:c chat:c)
-          .^  (map flag:c chat:c)  %gx
-              (welp (en-beak:hc %chat) /chats/chats)
-          ==
-        ::
-        :: get new posts
-        =/  since  (sub now.bowl window)
-        =/  new
-          %-  ~(run by chats)
-          |=  =chat:c
-          ^-  [flag:g (list [time writ:c])]
-          :-  group.perm.chat
-          =+  on:writs:c
-          %-  flop  :: newest first
-          %+  murn  :: ignore notices
-            (tap (lot wit.pact.chat `since ~))
-          |=  [time writ:c]
-          ?.(?=(%story -.content) ~ (some +<))
-        ::
-        :: remove dead chats
-        =|  mems=(map flag:c [flag:g id:c (set ship)])
-        =.  mems
-          %-  ~(gas by mems)
-          %+  turn
-            %+  murn  ~(tap by new)
-            |=  [=flag:c flag:g l=(list [time writ:c])]
-            ?~(l ~ (some +<))
-          |=  [=flag:c grup=flag:g l=(list [time writ:c])]
-          ?~  l  !!
-          :^  flag  grup  id:i.l
-          (sy (turn l |=([time writ:c] author)))
-        ::
-        =/  us=(set ship)  +>:(~(got by mems) flag.axn)
-        =/  not-us=(list [flag:c flag:g id:c (set ship)])
-          %+  murn  ~(tap by mems)
-          |=  [=flag:c grup=flag:g =id:c mem=(set ship)]
-          ?:  =(flag flag.axn)  ~
-          ?:  =(grup galf)  ~
-          (some +<)
-        ::
-        :: get similarity
-        =+  %+  turn  not-us
-            |=  [=flag:c grup=flag:g =id:c mem=(set ship)]
-            [grup (jaccard us mem)]
-            :: [[flag id] (jaccard us mem)]
-        :: =/  jack=(list [[flag:c id:c] @rs])
-        =/  jack=(list flag:g)
-          %~  tap  in
-          %-  sy
-          %+  turn
-            %+  sort  -
-            |*  [a=[* @rs] b=[* @rs]]
-            (gth:rs +.a +.b)
-          head
-        ::
+        =/  galf  (group-flag:gc flag.axn)
+        =/  jack  (jaccard-postership:gc galf window)
         :: convert groups to cite blocks
-        =/  cites=(list block:c)
-          %+  turn  (scag (min n.cmd 10) jack)
-          |=(=flag:g [%cite %group flag])
-          :: |=  [[=flag:c =id:c] @rs]
-          :: :^  %cite  %chan  [%chat flag]
-          :: /msg/(scot %p p.id)/(scot %ud q.id)
         ::
+        =/  cites=(list block:c)
+          %-  encite-groups:hc
+          (turn (scag (min n.cmd 10) jack) head)
         :: create reply
+        ::
         =/  plain=(list inline:c)
           :~  [%inline-code ';portal']
               ' is a '
@@ -246,41 +335,18 @@
               [%break ~]
           ==
         =/  =content:c  [%story cites (weld plain promo)]
-        =/  id  ?~(rid.axn id.axn u.rid.axn)
         :_  state
-        ?.  zap.cmd
-          [(message-card:hc flag.axn id content)]~
-        %:  flare-cards:hc
-          flag.axn  id.axn  rid.axn  ~s10  content
-        ==
+        %-  enflare:hc 
+        [[zap.cmd ~s10] flag.axn id.axn rid.axn content]
         ::
           %old-portal
         ?>  =(author.axn our.bowl)
-        =/  galf  (group-flag:hc flag.axn)
-        =/  groups  .^(groups:g %gx (welp (en-beak:hc %groups) /groups/groups))
-        =/  fleet=(set ship)  ~(key by fleet:(~(got by groups) galf))
-        :: 
-        :: remove self and secret groups
-        =+  %+  murn  ~(tap by groups)
-            |=  [=flag:g group:g]
-            ?:(|(secret =(flag galf)) ~ (some +<))
-        ::
-        :: compute jaccard index with current group
-        =+  %+  turn  -
-            |=  [=flag:g group:g]
-            ^-  [flag:g @rs]
-            [flag (jaccard:hc ^fleet ~(key by fleet))]
-        ::
-        :: sort by jaccard index
+        =/  galf=flag:g  (group-flag:gc flag.axn)
         =/  jack=(list [flag:g @rs])
-          %+  sort  -
-          |=  [a=[flag:g @rs] b=[flag:g @rs]]
-          (gth:rs +.a +.b)
-        ::
-        :: convert groups to cite blocks
+          (jaccard-membership:gc galf)
         =/  cites=(list block:c)
-          %+  turn  (scag (min n.cmd 10) jack)
-          |=([=flag:g @rs] [%cite %group flag])
+          %-  encite-groups:hc
+          (turn (scag (min n.cmd 10) jack) head)
         ::
         :: create reply
         =/  plain=(list inline:c)
@@ -294,19 +360,15 @@
               [%break ~]
           ==
         =/  =content:c  [%story cites (weld plain promo)]
-        =/  id  ?~(rid.axn id.axn u.rid.axn)
         :_  state
-        ?.  zap.cmd
-          [(message-card:hc flag.axn id content)]~
-        %:  flare-cards:hc
-          flag.axn  id.axn  rid.axn  ~s10  content
-        ==
+        %-  enflare:hc 
+        [[zap.cmd ~s10] flag.axn id.axn rid.axn content]
         ::
           %extract-pals
         ~&  "Extracting pals..."
         ?>  =(author.axn our.bowl)
-        =/  galf  (group-flag:hc flag.axn)
-        =/  fleet  (group-to-fleet:hc galf)
+        =/  galf  (group-flag:gc flag.axn)
+        =/  fleet  (group-to-fleet:gc galf)
         =/  pals-cards
           %+  turn  ~(tap in fleet)
           |=  =ship
@@ -339,14 +401,9 @@
         =/  =content:c
           :+  %story  ~
           ['' [%code msg] '\0a' promo]
-        =/  rid=id:c
-          ?~(rid.axn id.axn u.rid.axn)
         :_  state
-        ?.  zap.cmd
-          [(message-card:hc flag.axn rid content)]~
-        %:  flare-cards:hc
-          flag.axn  id.axn  rid.axn  ~s10  content
-        ==
+        %-  enflare:hc 
+        [[zap.cmd ~s10] flag.axn id.axn rid.axn content]
       ==
     ==
   --
@@ -383,7 +440,7 @@
             =/  axn=^action
               :+  %command
                 [author.memo flag id rid p.content.memo]
-              (command-parser line bowl +.state)
+              (command-parser line bowl state)
             :_  this
             :~  :*  %pass  /  %agent  [our dap]:bowl  %poke
                     grout-action+!>(axn)
