@@ -23,5 +23,7 @@ Or `|install ~dister-dozzod-niblyx-malnus %grout` for regular updates.
 | ------- | ----------- |
 | `!` prefix instead of `;` | self-destruct in `~s10` |
 | `;xpals` | extract group members as pals tagged with group name |
-| `;portal` or `;portal 3` (`;portal @ud<=10`) | post links to the nearest groups ranked by jaccard index of group membership |
+| `;portal` or `;portal 3` (`;portal @ud<=10`) | post links to the nearest groups ranked by jaccard index of recent posters in each group |
+| `;lurn` | portal to groups with latest unread messages (for you) |
+| `;moun` | portal to groups with most unread messages (for you) |
 | ... | ... |
