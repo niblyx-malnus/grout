@@ -3,7 +3,7 @@ A bot to access simple groups-related utilities directly in a groups chat.
 Inspired by [%gato](https://github.com/midsum-salrux/gato/) by ~midsum-salrux.
 
 ## WARNING:
-Messy and experimental. Commands subject to change. I expect to make a big mess while generating initial commands and then to hopefully extract some order out of the resulting chaos.
+Messy and experimental. Commands subject to change. I expect to make a big mess while generating initial commands and then to hopefully extract some order out of the resulting chaos. I'm going to try to get this to work with [`%surf`](https://github.com/niblyx-malnus/surf) since much of the groups utils I want to build involve fine-grained control over nagivation.
 
 ## Installation
 1. Clone this repo.
